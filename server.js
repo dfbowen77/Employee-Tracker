@@ -49,5 +49,43 @@ const questions = [
         // Not sure how to handle the choices yet. 
         choices: []
       },
-    //   START HERE TOMORROW WITH MORE QUESTIONS
+      {
+        type: 'input',
+        name: 'addEmployeeFirstName',
+        message: 'Enter a first name for the new employee:',
+      },
+      {
+        type: 'input',
+        name: 'addEmployeeLastName',
+        message: 'Enter a last name for the new employee:',
+      },
+      {
+        type: 'list',
+        name: 'roleEmployee',
+        message: 'Select a role for the new employee:',
+        // Not sure how to handle the choices yet. 
+        choices: []
+      },
+      {
+        type: 'list',
+        name: 'managerEmployee',
+        message: 'Select a manager for the new employee:',
+        // Not sure how to handle the choices yet. 
+        choices: []
+      },
+      {
+        type: 'list',
+        name: 'updateEmployeeRole',
+        message: 'Select an employee whose role needs updating:',
+        // Not sure how to handle the choices yet. 
+        choices: []
+      },
+      {
+        type: 'list',
+        name: 'assignEmployeeRole',
+        message: 'Select a new role for the employee:',
+        // Not sure how to handle the choices yet. 
+        choices: []
+      },
+    
   ]
