@@ -13,7 +13,7 @@ const logo = require('asciiart-logo')
 // Here is where the questions for the user to answer are created.
 
 // TODO: Research whether I need to break these questions up into different arrays (e.g. one array for adding a role and a different array for the main prompt of questions).  
-const questions = [
+const initialQuestion = [
     {
       type: 'list',
       message: 'Select from the following list of options: ',
@@ -27,6 +27,11 @@ const questions = [
                 'Add Department',
                 'Quit'],
     },
+]
+
+console.log(initialQuestion)
+
+const questions = [
     {
         type: 'input',
         name: 'addDepartment',
@@ -89,3 +94,95 @@ const questions = [
       },
     
   ]
+function viewAllEmployees() {
+  console.log("The viewAllEmployees function is activated")
+  init()
+}
+
+function addEmployee() {
+  console.log("The addEmployee function is activated")
+  init()
+}
+
+function updateEmployeeRole() {
+  console.log("The updateEmployeeRole function is activated")
+  init()
+}
+
+function viewAllRoles() {
+  console.log("The viewAllRoles function is activated")
+  init()
+}
+
+function addRole() {
+  console.log("The addRole function is activated")
+  init()
+}
+
+function viewAllDepartments() {
+  console.log("The viewAllDepartments function is activated")
+  init()
+}
+
+function addDepartment() {
+  console.log("The addDepartment function is activated")
+  init()
+}
+
+function init() {
+  console.log("Welcome to the Employee Tracker!");
+  inquirer
+      .prompt(initialQuestion)
+      .then((answer) => {
+        console.log(answer)
+        console.log(answer.options)
+        // answer.options is only the text of the response of the user; whereas the answers variable contains both the name of the answer (e.g. 'options') and the actual answer (e.g. 'View All Employees). Thus, you need answer.options to make this switch statement to work properly.  
+        switch(answer.options){
+          case 'View All Employees':
+            console.log("Add function to query database for all employees")
+            viewAllEmployees()
+          break;
+
+          case 'Add Employee':
+            console.log("Add function to add an employee to the database")
+            addEmployee()
+          break;
+
+          case 'Update Employee Role':
+            console.log("Add function to update employee role in the database")
+            updateEmployeeRole()
+          break;
+
+          case 'View All Roles':
+            console.log("Add function to query database for all roles")
+            viewAllRoles()
+          break;
+
+          case 'Add Role':
+            console.log("Add function to add a role to the database")
+            addRole()
+          break;
+
+          case 'View All Departments':
+            console.log("Add function to query database for all departments")
+            viewAllDepartments()
+          break;
+
+          case 'Add Department':
+            console.log("Add function to add a department to the database")
+            addDepartment()
+          break;
+
+          case 'Quit':
+            console.log("Add function to exit application")
+          break;
+        }
+
+      })
+      .catch((error) => {
+          console.log(error)
+      })
+
+}
+  
+init();
