@@ -23,6 +23,13 @@ const db = mysql.createConnection(
   console.log(`Connected to the employeetracker_db database.`)
 );
 
+db.connect((err) => {
+  if (err) throw err;
+  console.log("Connected to the database!");
+  // start the application
+  init();
+});
+
 // Here is where the questions for the user to answer are created.
 const initialQuestion = [
     {
@@ -43,11 +50,7 @@ const initialQuestion = [
 console.log(initialQuestion)
 
 const questions = [
-    {
-        type: 'input',
-        name: 'addDepartment',
-        message: 'Enter a name for the new department:',
-      },
+
       {
         type: 'input',
         name: 'addRole',
@@ -107,11 +110,19 @@ const questions = [
   ]
 function viewAllEmployees() {
   console.log("The viewAllEmployees function is activated")
-  init()
+  const sqlQuery = 'SELECT * from employee'
+  console.log(sqlQuery)
+
+  db.query(sqlQuery, (err, res) => {
+    if (err) throw err;
+    console.table(res)
+    init()
+  })
 }
 
 function addEmployee() {
   console.log("The addEmployee function is activated")
+
   init()
 }
 
@@ -122,7 +133,14 @@ function updateEmployeeRole() {
 
 function viewAllRoles() {
   console.log("The viewAllRoles function is activated")
-  init()
+  const sqlQuery = 'SELECT * from role'
+  console.log(sqlQuery)
+
+  db.query(sqlQuery, (err, res) => {
+    if (err) throw err;
+    console.table(res)
+    init()
+  })
 }
 
 function addRole() {
@@ -132,12 +150,29 @@ function addRole() {
 
 function viewAllDepartments() {
   console.log("The viewAllDepartments function is activated")
-  init()
+  const sqlQuery = 'SELECT * from department'
+  console.log(sqlQuery)
+
+  db.query(sqlQuery, (err, res) => {
+    if (err) throw err;
+    console.table(res)
+    init()
+  })
 }
 
 function addDepartment() {
   console.log("The addDepartment function is activated")
-  init()
+  inquirer
+  .prompt({
+      type: 'input',
+      name: 'addDepartment',
+      message: 'Enter a name for the new department:',
+  })
+  .then((answer) => {
+    console.log(answer)
+    init()
+  })
+
 }
 
 function init() {
@@ -196,4 +231,4 @@ function init() {
 
 }
   
-init();
+// init();
