@@ -51,23 +51,8 @@ console.log(initialQuestion)
 
 const questions = [
 
-      {
-        type: 'input',
-        name: 'addRole',
-        message: 'Enter a name for the new role:',
-      },
-      {
-        type: 'input',
-        name: 'roleSalary',
-        message: 'Enter a salary for the new role:',
-      },
-      {
-        type: 'list',
-        name: 'roleDepartment',
-        message: 'Select a department for the role to belong to:',
-        // Not sure how to handle the choices yet. 
-        choices: []
-      },
+
+      
       {
         type: 'input',
         name: 'addEmployeeFirstName',
@@ -145,7 +130,45 @@ function viewAllRoles() {
 
 function addRole() {
   console.log("The addRole function is activated")
-  init()
+  const sqlQuery = 'SELECT * FROM department'
+  db.query(sqlQuery, (err, res) => {
+    if (err) throw err
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'addRole',
+        message: 'Enter a name for the new role:',
+      },
+      {
+        type: 'input',
+        name: 'roleSalary',
+        message: 'Enter a salary for the new role:',
+      },
+      {
+      type: 'list',
+      name: 'roleDepartment',
+      message: 'Select a department for the role to belong to:',
+      choices: res.map((department) => department.department_name)
+      }
+    ])
+    .then((answer) => {
+      console.log(answer.addRole)
+      console.log(answer.roleSalary)
+      console.log(answer.roleDepartment)
+      const department = res.find(
+        (department) => department.name === answer.department)
+      console.log(department.id)
+      const sqlQuery = `INSERT INTO role (title, salary, department_id) VALUES ("${answer.addRole}", "${answer.roleSalary}", "${department.id}")`
+      console.log(sqlQuery)
+      db.query(sqlQuery, (err, res) => {
+        if (err) throw (err)
+        console.log(`The role ${answer.addRole} has been added to the role database. It has a salary of $${answer.roleSalary} and is associated with the ${answer.roleDepartment} department`)
+        init()
+      })
+    })
+      
+})
 }
 
 function viewAllDepartments() {
@@ -169,8 +192,15 @@ function addDepartment() {
       message: 'Enter a name for the new department:',
   })
   .then((answer) => {
-    console.log(answer)
-    init()
+    console.log(answer.addDepartment)
+    // The following line write the sql statement to insert the value entered by the user into the database table 'department.' The template litoral answer.addDepartment is how to get the specific response from inquirer. 
+    const sqlQuery = `INSERT INTO department (department_name) VALUES ("${answer.addDepartment}")`
+    console.log(sqlQuery)
+    db.query(sqlQuery, (err, res) => {
+      if (err) throw err;
+      console.log(`The ${answer.addDepartment} department has been added to the department database.`)
+      init()
+    })
   })
 
 }
@@ -221,6 +251,7 @@ function init() {
 
           case 'Quit':
             console.log("Add function to exit application")
+            db.end()
           break;
         }
 
