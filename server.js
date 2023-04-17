@@ -55,7 +55,7 @@ function viewAllEmployees() {
   db.query(sqlQuery, (err, res) => {
     if (err) throw err;
     console.table(res)
-    init()
+    questions()
   })
 }
 
@@ -114,7 +114,7 @@ function addEmployee() {
                     db.query(employeeAddSql, newEmployeeData, (err, res) => {
                       if (err) throw err
                       console.log(`The new employee ${newEmployeeData[0]} ${newEmployeeData[1]} has been added to the database.`)
-                      init()
+                      questions()
                     })
                   })
               })
@@ -166,7 +166,7 @@ function updateEmployeeRole() {
               db.query(updateRoleSql, updateRoleData, (err, res) => {
                 if (err) throw err
                 console.log("Employee role has been updated.")
-                init()
+                questions()
               })
               
             })
@@ -186,7 +186,7 @@ function viewAllRoles() {
   db.query(sqlQuery, (err, res) => {
     if (err) throw err;
     console.table(res)
-    init()
+    questions()
   })
 }
 
@@ -226,7 +226,7 @@ function addRole() {
       db.query(sqlQuery, (err, res) => {
         if (err) throw (err)
         console.log(`The role ${answer.addRole} has been added to the role database. It has a salary of $${answer.roleSalary} and is associated with the ${answer.roleDepartment} department`)
-        init()
+        questions()
       })
     })
       
@@ -241,7 +241,7 @@ function viewAllDepartments() {
   db.query(sqlQuery, (err, res) => {
     if (err) throw err;
     console.table(res)
-    init()
+    questions()
   })
 }
 
@@ -261,14 +261,32 @@ function addDepartment() {
     db.query(sqlQuery, (err, res) => {
       if (err) throw err;
       console.log(`The ${answer.addDepartment} department has been added to the department database.`)
-      init()
+      questions()
     })
   })
 
 }
 
 function init() {
-  console.log("Welcome to the Employee Tracker!");
+  const longText = 'Welcome to the Employee Tracker System. It is a command-line application that allows business owners to easily view and manage the company departments, roles, and employees.'
+  // console.log("Welcome to the Employee Tracker!");
+  console.log(logo({
+    name: 'Employee Tracker System',
+    font: 'Standard',
+    lineChars: 10,
+    padding: 2,
+    margin: 3,
+    borderColor: 'red',
+    logoColor: 'yellow',
+    textColor: 'magenta',
+  })
+    .center(longText)
+    .render())
+
+    questions()
+}
+
+function questions(){
   inquirer
       .prompt(initialQuestion)
       .then((answer) => {
