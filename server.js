@@ -47,29 +47,6 @@ const initialQuestion = [
     },
 ]
 
-console.log(initialQuestion)
-
-const questions = [
-
-
-      
-
-      {
-        type: 'list',
-        name: 'updateEmployeeRole',
-        message: 'Select an employee whose role needs updating:',
-        // Not sure how to handle the choices yet. 
-        choices: []
-      },
-      {
-        type: 'list',
-        name: 'assignEmployeeRole',
-        message: 'Select a new role for the employee:',
-        // Not sure how to handle the choices yet. 
-        choices: []
-      },
-    
-  ]
 function viewAllEmployees() {
   console.log("The viewAllEmployees function is activated")
   const sqlQuery = 'SELECT * from employee'
@@ -143,17 +120,62 @@ function addEmployee() {
               })
             })
           }) 
-      })
-  
-    
-
-
-  
+      })  
 }
 
 function updateEmployeeRole() {
   console.log("The updateEmployeeRole function is activated")
-  init()
+  // Add a left join if time permits
+  const employeeQuery = 'SELECT a.*, b.title FROM employee as a LEFT JOIN role as b ON a.role_id = b.id'
+  db.query(employeeQuery, (err, res) => {
+    if (err) throw err
+    const employees = res.map(({id, first_name, last_name, title}) => ({name: first_name + " "+ last_name + ":  " + title, value: id}))
+    inquirer
+      .prompt([
+        {
+          type: 'list',
+          name: 'updateEmployeeRole',
+          message: 'Select an employee whose role needs updating:',
+          choices: employees
+        }
+      ])
+      .then((answer) => {
+        console.log(answer)
+        const updateRoleData = [answer.updateEmployeeRole]
+
+        const roleSql = 'SELECT * FROM role'
+        db.query(roleSql, (err, res) => {
+          if (err) throw err
+          const roles = res.map(({id, title}) => ({name: title, value: id}))
+          inquirer
+            .prompt([
+              {
+                type: 'list',
+                name: 'assignEmployeeRole',
+                message: 'Select a new role for the employee:',
+                choices: roles
+              }
+            ])
+            .then((answer) => {
+              console.log(answer)
+              // I used unshift in order to make the role_id the first observation in the array because it needs to come before the employee id in the upcoming sql query. 
+              updateRoleData.unshift(answer.assignEmployeeRole)
+              console.log(updateRoleData)
+              const updateRoleSql = `UPDATE employee SET role_id = ? Where id = ?`
+
+              db.query(updateRoleSql, updateRoleData, (err, res) => {
+                if (err) throw err
+                console.log("Employee role has been updated.")
+                init()
+              })
+              
+            })
+        })
+        
+      
+      })
+  })
+  
 }
 
 function viewAllRoles() {
@@ -301,5 +323,3 @@ function init() {
       })
 
 }
-  
-// init();
