@@ -53,30 +53,7 @@ const questions = [
 
 
       
-      {
-        type: 'input',
-        name: 'addEmployeeFirstName',
-        message: 'Enter a first name for the new employee:',
-      },
-      {
-        type: 'input',
-        name: 'addEmployeeLastName',
-        message: 'Enter a last name for the new employee:',
-      },
-      {
-        type: 'list',
-        name: 'roleEmployee',
-        message: 'Select a role for the new employee:',
-        // Not sure how to handle the choices yet. 
-        choices: []
-      },
-      {
-        type: 'list',
-        name: 'managerEmployee',
-        message: 'Select a manager for the new employee:',
-        // Not sure how to handle the choices yet. 
-        choices: []
-      },
+
       {
         type: 'list',
         name: 'updateEmployeeRole',
@@ -108,7 +85,70 @@ function viewAllEmployees() {
 function addEmployee() {
   console.log("The addEmployee function is activated")
 
-  init()
+  inquirer
+     .prompt([
+       {
+         type: 'input',
+         name: 'addEmployeeFirstName',
+         message: 'Enter a first name for the new employee:',
+       },
+       {
+         type: 'input',
+         name: 'addEmployeeLastName',
+         message: 'Enter a last name for the new employee:',
+       }])
+      .then((answer) => {
+        console.log(answer.addEmployeeFirstName)
+        console.log(answer.addEmployeeLastName)
+        const newEmployeeData = [answer.addEmployeeFirstName, answer.addEmployeeLastName]
+        const roleQuery = 'SELECT * FROM role'
+        db.query(roleQuery, (err, res) => {
+          if (err) throw err
+          const roles = res.map(({id, title}) => ({name: title, value: id}))
+          inquirer
+            .prompt([{
+              type: 'list',
+              name: 'roleEmployee',
+              message: 'Select a role for the new employee:',
+              choices: roles
+            }])
+            .then((answer) => {
+              console.log(answer.roleEmployee)
+              newEmployeeData.push(answer.roleEmployee)
+              console.log(newEmployeeData)
+
+              const managerQuery = 'SELECT * FROM employee'
+              db.query(managerQuery, (err, res) => {
+                if (err) throw err
+                const managers = res.map(({id, first_name, last_name}) => ({name: first_name + " "+ last_name, value: id}))
+                console.log(managers)
+                inquirer
+                  .prompt([{
+                    type: 'list',
+                    name: 'managerEmployee',
+                    message: 'Select a manager for the new employee:',
+                    choices: managers
+                  }])
+                  .then((answer) => {
+                    console.log(answer)
+                    newEmployeeData.push(answer.managerEmployee)
+                    const employeeAddSql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)`
+
+                    db.query(employeeAddSql, newEmployeeData, (err, res) => {
+                      if (err) throw err
+                      console.log(`The new employee ${newEmployeeData[0]} ${newEmployeeData[1]} has been added to the database.`)
+                      init()
+                    })
+                  })
+              })
+            })
+          }) 
+      })
+  
+    
+
+
+  
 }
 
 function updateEmployeeRole() {
