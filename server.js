@@ -49,7 +49,7 @@ const initialQuestion = [
 
 function viewAllEmployees() {
   console.log("The viewAllEmployees function is activated")
-  const sqlQuery = 'SELECT * from employee'
+  const sqlQuery = 'SELECT a.id, a.first_name, a.last_name, b.title, a.manager_id  FROM employee AS a LEFT JOIN role AS b ON a.role_id = b.id'
   console.log(sqlQuery)
 
   db.query(sqlQuery, (err, res) => {
@@ -180,7 +180,7 @@ function updateEmployeeRole() {
 
 function viewAllRoles() {
   console.log("The viewAllRoles function is activated")
-  const sqlQuery = 'SELECT * from role'
+  const sqlQuery = 'SELECT a.id, a.title, a.salary, b.department_name FROM role AS a LEFT JOIN department AS b ON a.department_id = b.id'
   console.log(sqlQuery)
 
   db.query(sqlQuery, (err, res) => {
