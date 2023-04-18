@@ -16,21 +16,20 @@ const db = mysql.createConnection(
     host: 'localhost',
     // MySQL username,
     user: 'root',
-    // TODO: Add MySQL password here
+    // MySQL password
     password: '12345',
     database: 'employeetracker_db'
   },
-  console.log(`Connected to the employeetracker_db database.`)
 );
 
+// This function tests whether there is an error in the connection to the database. If not, then the application starts. 
 db.connect((err) => {
   if (err) throw err;
-  console.log("Connected to the database!");
   // start the application
   init();
 });
 
-// Here is where the questions for the user to answer are created.
+// Here is where the initial question for the user to answer was created.
 const initialQuestion = [
     {
       type: 'list',
@@ -47,21 +46,23 @@ const initialQuestion = [
     },
 ]
 
+// This function allows the user to view all the employees stored in the database
 function viewAllEmployees() {
-  console.log("The viewAllEmployees function is activated")
-  const sqlQuery = 'SELECT a.id, a.first_name, a.last_name, b.title, a.manager_id  FROM employee AS a LEFT JOIN role AS b ON a.role_id = b.id'
-  console.log(sqlQuery)
+  // This sql query pulls employee and role data and joins it via a left join. The left join allows pertinent information from the role table (role.title) to be added into the employee table data. 
+  const sqlQuery = 'SELECT a.id AS "Id", a.first_name AS "First Name", a.last_name AS "Last Name", b.title AS "Title", a.manager_id AS "Manager Id"  FROM employee AS a LEFT JOIN role AS b ON a.role_id = b.id'
 
+  // The query method takes the above query statement (sqlQuery) and the returns either an error (err) if there is a problem, or it returns the results (res; or whatever I want to to call the results.)
   db.query(sqlQuery, (err, res) => {
     if (err) throw err;
     console.table(res)
+    // after this function is run the questions function is called to restart the program. 
     questions()
   })
 }
 
+// This function allows the users to add an employee to the database by answering a series of questions. 
 function addEmployee() {
-  console.log("The addEmployee function is activated")
-
+  // The inquirer package is used to ask the user various types of questions via the command line prompt.  
   inquirer
      .prompt([
        {
@@ -75,12 +76,12 @@ function addEmployee() {
          message: 'Enter a last name for the new employee:',
        }])
       .then((answer) => {
-        console.log(answer.addEmployeeFirstName)
-        console.log(answer.addEmployeeLastName)
+        // The user's answers to the two previous questions are added to a new const variable called newEmployeeData. 
         const newEmployeeData = [answer.addEmployeeFirstName, answer.addEmployeeLastName]
         const roleQuery = 'SELECT * FROM role'
         db.query(roleQuery, (err, res) => {
           if (err) throw err
+          // the .map method is used to create a new array of roles that can be used later in the program to populate the choices for the 'Select a role for the new employee' question. 
           const roles = res.map(({id, title}) => ({name: title, value: id}))
           inquirer
             .prompt([{
@@ -90,15 +91,14 @@ function addEmployee() {
               choices: roles
             }])
             .then((answer) => {
-              console.log(answer.roleEmployee)
+              // The push method adds the user's answer to the previous question to the newEmployeeData array. 
               newEmployeeData.push(answer.roleEmployee)
-              console.log(newEmployeeData)
 
               const managerQuery = 'SELECT * FROM employee'
               db.query(managerQuery, (err, res) => {
                 if (err) throw err
+                // Here the .map mathod is used to create a new array called managers where the first name and last name have been concatenated into a single variable.
                 const managers = res.map(({id, first_name, last_name}) => ({name: first_name + " "+ last_name, value: id}))
-                console.log(managers)
                 inquirer
                   .prompt([{
                     type: 'list',
@@ -107,13 +107,13 @@ function addEmployee() {
                     choices: managers
                   }])
                   .then((answer) => {
-                    console.log(answer)
                     newEmployeeData.push(answer.managerEmployee)
+                    // The following query inserts a new value into the employee database. The (?, ?, ?, ? ) tells the query to assign the next 4 values into the first_name, last_name, role_id, and manager_id variables. Those values are passed in the .query method and contained in the newEmployeeData const variable. 
                     const employeeAddSql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?)`
 
                     db.query(employeeAddSql, newEmployeeData, (err, res) => {
                       if (err) throw err
-                      console.log(`The new employee ${newEmployeeData[0]} ${newEmployeeData[1]} has been added to the database.`)
+                      console.log(`\n\nSuccess!!!\nThe new employee ${newEmployeeData[0]} ${newEmployeeData[1]} has been added to the database.\n\n`)
                       questions()
                     })
                   })
@@ -124,8 +124,7 @@ function addEmployee() {
 }
 
 function updateEmployeeRole() {
-  console.log("The updateEmployeeRole function is activated")
-  // Add a left join if time permits
+  // The employee and role tables are joined via a left join on the role id variable. 
   const employeeQuery = 'SELECT a.*, b.title FROM employee as a LEFT JOIN role as b ON a.role_id = b.id'
   db.query(employeeQuery, (err, res) => {
     if (err) throw err
@@ -140,7 +139,6 @@ function updateEmployeeRole() {
         }
       ])
       .then((answer) => {
-        console.log(answer)
         const updateRoleData = [answer.updateEmployeeRole]
 
         const roleSql = 'SELECT * FROM role'
@@ -157,15 +155,13 @@ function updateEmployeeRole() {
               }
             ])
             .then((answer) => {
-              console.log(answer)
               // I used unshift in order to make the role_id the first observation in the array because it needs to come before the employee id in the upcoming sql query. 
               updateRoleData.unshift(answer.assignEmployeeRole)
-              console.log(updateRoleData)
               const updateRoleSql = `UPDATE employee SET role_id = ? Where id = ?`
 
               db.query(updateRoleSql, updateRoleData, (err, res) => {
                 if (err) throw err
-                console.log("Employee role has been updated.")
+                console.log("\n\nSuccess!!!\nThe employee role has been updated.\n\n")
                 questions()
               })
               
@@ -179,9 +175,8 @@ function updateEmployeeRole() {
 }
 
 function viewAllRoles() {
-  console.log("The viewAllRoles function is activated")
-  const sqlQuery = 'SELECT a.id, a.title, a.salary, b.department_name FROM role AS a LEFT JOIN department AS b ON a.department_id = b.id'
-  console.log(sqlQuery)
+  // The variables in this sql query were renamed via AS to enhance the readability of the table for the user. 
+  const sqlQuery = 'SELECT a.id AS "Id", a.title AS "Title", a.salary AS "Salary", b.department_name AS "Department Name" FROM role AS a LEFT JOIN department AS b ON a.department_id = b.id'
 
   db.query(sqlQuery, (err, res) => {
     if (err) throw err;
@@ -191,7 +186,6 @@ function viewAllRoles() {
 }
 
 function addRole() {
-  console.log("The addRole function is activated")
   const sqlQuery = 'SELECT * FROM department'
   db.query(sqlQuery, (err, res) => {
     if (err) throw err
@@ -215,17 +209,14 @@ function addRole() {
       }
     ])
     .then((answer) => {
-      console.log(answer.addRole)
-      console.log(answer.roleSalary)
-      console.log(answer.roleDepartment)
+      // The find method is used to find the name of the department in the database that matches the answer that the user gave to the 'Select a department for the role to belong to' question. 
       const department = res.find(
         (department) => department.name === answer.department)
-      console.log(department.id)
       const sqlQuery = `INSERT INTO role (title, salary, department_id) VALUES ("${answer.addRole}", "${answer.roleSalary}", "${department.id}")`
-      console.log(sqlQuery)
       db.query(sqlQuery, (err, res) => {
         if (err) throw (err)
-        console.log(`The role ${answer.addRole} has been added to the role database. It has a salary of $${answer.roleSalary} and is associated with the ${answer.roleDepartment} department`)
+        // The \n is used to add some space to the console.log print out to make it easier for the user to read the output. 
+        console.log(`\n\nSuccess!!!\nThe role ${answer.addRole} has been added to the role database.\nIt has a salary of $${answer.roleSalary} and is associated with the ${answer.roleDepartment} department.\n\n`)
         questions()
       })
     })
@@ -234,19 +225,17 @@ function addRole() {
 }
 
 function viewAllDepartments() {
-  console.log("The viewAllDepartments function is activated")
-  const sqlQuery = 'SELECT * from department'
-  console.log(sqlQuery)
+  const sqlQuery = 'SELECT id AS "Id", department_name AS "Department Name" FROM department'
 
   db.query(sqlQuery, (err, res) => {
     if (err) throw err;
+    // The .table method write a table to the console that the user can then view. 
     console.table(res)
     questions()
   })
 }
 
 function addDepartment() {
-  console.log("The addDepartment function is activated")
   inquirer
   .prompt({
       type: 'input',
@@ -254,13 +243,11 @@ function addDepartment() {
       message: 'Enter a name for the new department:',
   })
   .then((answer) => {
-    console.log(answer.addDepartment)
     // The following line write the sql statement to insert the value entered by the user into the database table 'department.' The template litoral answer.addDepartment is how to get the specific response from inquirer. 
     const sqlQuery = `INSERT INTO department (department_name) VALUES ("${answer.addDepartment}")`
-    console.log(sqlQuery)
     db.query(sqlQuery, (err, res) => {
       if (err) throw err;
-      console.log(`The ${answer.addDepartment} department has been added to the department database.`)
+      console.log(`\n\nSuccess!!!\nThe ${answer.addDepartment} department has been added to the department database.\n\n`)
       questions()
     })
   })
@@ -268,8 +255,8 @@ function addDepartment() {
 }
 
 function init() {
+    // The asciiart-logo package is used create a logo for the application that can be viewed in the command line when the program initializes. 
   const longText = 'Welcome to the Employee Tracker System. It is a command-line application that allows business owners to easily view and manage the company departments, roles, and employees.'
-  // console.log("Welcome to the Employee Tracker!");
   console.log(logo({
     name: 'Employee Tracker System',
     font: 'Standard',
@@ -290,47 +277,38 @@ function questions(){
   inquirer
       .prompt(initialQuestion)
       .then((answer) => {
-        console.log(answer)
-        console.log(answer.options)
+        console.clear()
         // answer.options is only the text of the response of the user; whereas the answers variable contains both the name of the answer (e.g. 'options') and the actual answer (e.g. 'View All Employees). Thus, you need answer.options to make this switch statement to work properly.  
         switch(answer.options){
           case 'View All Employees':
-            console.log("Add function to query database for all employees")
             viewAllEmployees()
           break;
 
           case 'Add Employee':
-            console.log("Add function to add an employee to the database")
             addEmployee()
           break;
 
           case 'Update Employee Role':
-            console.log("Add function to update employee role in the database")
             updateEmployeeRole()
           break;
 
           case 'View All Roles':
-            console.log("Add function to query database for all roles")
             viewAllRoles()
           break;
 
           case 'Add Role':
-            console.log("Add function to add a role to the database")
             addRole()
           break;
 
           case 'View All Departments':
-            console.log("Add function to query database for all departments")
             viewAllDepartments()
           break;
 
           case 'Add Department':
-            console.log("Add function to add a department to the database")
             addDepartment()
           break;
 
           case 'Quit':
-            console.log("Add function to exit application")
             db.end()
           break;
         }
